@@ -32,29 +32,37 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // Countdown timer
   function startCountdown() {
-    let countdownEndDate = new Date("2025-05-28T00:00:00-04:00");
-    let targetTime = countdownEndDate.getTime();
+  let countdownEndDate = new Date("2025-04-30T00:00:00-04:00");
+  let targetTime = countdownEndDate.getTime();
 
-    let countdownInterval = setInterval(function() {
-      let now = new Date().getTime();
-      let distance = targetTime - now;
-      if (distance < 0) {
-        clearInterval(countdownInterval);
-        document.querySelectorAll(".countdown-digits").forEach(el => el.innerHTML = "00");
-        return;
-      }
-      let days    = Math.floor(distance / (1000 * 60 * 60 * 24));
-      let hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      
-      document.getElementById("days-desktop").innerHTML    = days    < 10 ? "0" + days    : days;
-      document.getElementById("hours-desktop").innerHTML   = hours   < 10 ? "0" + hours   : hours;
-      document.getElementById("minutes-desktop").innerHTML = minutes < 10 ? "0" + minutes : minutes;
-      document.getElementById("seconds-desktop").innerHTML = seconds < 10 ? "0" + seconds : seconds;
-    }, 1000);
-  }
+  let countdownInterval = setInterval(function() {
+    let now = new Date().getTime();
+    let distance = targetTime - now;
+    if (distance < 0) {
+      clearInterval(countdownInterval);
+      document.querySelectorAll(".countdown-digits").forEach(el => {
+        if (el) el.innerHTML = "00";
+      });
+      return;
+    }
 
+    let days    = Math.floor(distance / (1000 * 60 * 60 * 24));
+    let hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    const update = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = val < 10 ? "0" + val : val;
+    };
+
+    update("days-desktop", days);
+    update("hours-desktop", hours);
+    update("minutes-desktop", minutes);
+    update("seconds-desktop", seconds);
+  }, 1000);
+}
+  
   function showExitPopup() {
     if (!exitIntentShown) {
       exitIntentShown = true;
