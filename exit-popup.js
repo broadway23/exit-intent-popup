@@ -121,7 +121,7 @@ window.addEventListener("DOMContentLoaded", function () {
       });
 
       console.log("Exit popup displayed.");
-      startCountdown();
+      setTimeout(startCountdown, 100); // Wait 100ms for DOM to render
     }
   }
 
