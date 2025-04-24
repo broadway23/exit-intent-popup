@@ -1,3 +1,4 @@
+console.log("🔥 Purge test version — should be visible in console");
 // URL
 document.addEventListener('click', (event) => {
   if (event.target && event.target.id === 'claim-btn') {
