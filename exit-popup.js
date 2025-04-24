@@ -1,4 +1,3 @@
-console.log("✅ Exit Popup JS — Version 4 — Apr 24, 3:45PM");
 // URL
 document.addEventListener('click', (event) => {
   if (event.target && event.target.id === 'claim-btn') {
