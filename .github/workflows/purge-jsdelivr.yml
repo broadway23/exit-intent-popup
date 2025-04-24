@@ -1,0 +1,14 @@
+name: Purge jsDelivr
+
+on:
+  push:
+    branches: [main]   # change if your default branch is not “main”
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Purge CDN cache
+        uses: egad13/purge-jsdelivr-cache@v1
+        with:
+          url: https://cdn.jsdelivr.net/gh/broadway23/exit-intent-popup@main/exit-popup.js
