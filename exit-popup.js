@@ -119,9 +119,21 @@ window.addEventListener("DOMContentLoaded", function () {
         document.getElementById("exit-popup").remove();
         document.body.style.overflow = "";
       });
+console.log("Exit popup displayed.");
 
-      console.log("Exit popup displayed.");
-      setTimeout(startCountdown, 100); // Wait 100ms for DOM to render
+// Wait until the countdown element is in the DOM, then start
+const countdownReady = () => document.getElementById("days-desktop");
+
+const waitForCountdownElements = (callback) => {
+  const check = setInterval(() => {
+    if (countdownReady()) {
+      clearInterval(check);
+      callback();
+    }
+  }, 50);
+};
+
+waitForCountdownElements(startCountdown);
     }
   }
 
