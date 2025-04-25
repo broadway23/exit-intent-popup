@@ -32,7 +32,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // Countdown timer
   function startCountdown() {
-  let countdownEndDate = new Date("2025-06-06T00:00:00-04:00");
+  let countdownEndDate = new Date("2025-09-09T00:00:00-04:00");
   let targetTime = countdownEndDate.getTime();
 
   let countdownInterval = setInterval(function() {
