@@ -25,25 +25,45 @@ function isMobile() {
   return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-// EXIT POPUP
-window.addEventListener("DOMContentLoaded", function () {
-  let exitIntentShown = sessionStorage.getItem("exitPopupShown") === "true";
+/* --------------------------------------------------------------------
+ *  RESET COUNTDOWN LOGIC – resets every day at 06:00 EST
+ *  Runs until 30 December 2025 (EST)
+ * ------------------------------------------------------------------*/
+function getNextResetTime() {
+  const now     = new Date();
+  const estOff  = 5 * 60 * 60 * 1000;               // EST = UTC-05:00
+  const nowEST  = new Date(now.getTime() - estOff); // convert to EST
 
-  // Countdown timer
-  function startCountdown() {
-  let countdownEndDate = new Date("2025-05-05T00:00:00-04:00");
-  let targetTime = countdownEndDate.getTime();
+  const nextEST = new Date(nowEST);
+  nextEST.setHours(6, 0, 0, 0);                     // today 06:00 EST
+  if (nowEST >= nextEST) {
+    nextEST.setDate(nextEST.getDate() + 1);         // else tomorrow
+  }
+  return new Date(nextEST.getTime() + estOff);      // back to local
+}
 
-  let countdownInterval = setInterval(function() {
-    let now = new Date().getTime();
-    let distance = targetTime - now;
-    if (distance < 0) {
+function startCountdown() {
+  const cutoffTime = new Date("2025-12-30T06:00:00-05:00").getTime(); // last reset
+  let   targetTime = getNextResetTime().getTime();
+
+  const countdownInterval = setInterval(function () {
+    const now = Date.now();
+
+    // stop completely after 30 Dec 2025 06:00 EST
+    if (now >= cutoffTime) {
       clearInterval(countdownInterval);
       document.querySelectorAll(".countdown-digits").forEach(el => {
         if (el) el.innerHTML = "00";
       });
       return;
     }
+
+    // advance to the next daily reset if we’ve reached this one
+    if (now >= targetTime) {
+      targetTime = getNextResetTime().getTime();
+    }
+
+    const distance = targetTime - now;
 
     let days    = Math.floor(distance / (1000 * 60 * 60 * 24));
     let hours   = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -61,7 +81,11 @@ window.addEventListener("DOMContentLoaded", function () {
     update("seconds-desktop", seconds);
   }, 1000);
 }
-  
+
+// EXIT POPUP
+window.addEventListener("DOMContentLoaded", function () {
+  let exitIntentShown = sessionStorage.getItem("exitPopupShown") === "true";
+
   function showExitPopup() {
     if (!exitIntentShown) {
       exitIntentShown = true;
@@ -118,26 +142,24 @@ window.addEventListener("DOMContentLoaded", function () {
         document.getElementById("exit-popup").remove();
         document.body.style.overflow = "";
       });
-console.log("Exit popup displayed.");
 
-// Wait until the countdown element is in the DOM, then start
-const countdownReady = () => document.getElementById("days-desktop");
+      // Wait until the countdown element is in the DOM, then start
+      const countdownReady = () => document.getElementById("days-desktop");
 
-const waitForCountdownElements = (callback) => {
-  const check = setInterval(() => {
-    if (countdownReady()) {
-      clearInterval(check);
-      callback();
-    }
-  }, 50);
-};
+      const waitForCountdownElements = (callback) => {
+        const check = setInterval(() => {
+          if (countdownReady()) {
+            clearInterval(check);
+            callback();
+          }
+        }, 50);
+      };
 
-waitForCountdownElements(startCountdown);
+      waitForCountdownElements(startCountdown);
     }
   }
 
   // TRIGGER #1 (Desktop): Mouse leaves top
-
   if (!isMobile()) {
     document.addEventListener("mouseleave", function (event) {
       if (event.clientY <= 5) {
