@@ -26,8 +26,8 @@ function isMobile() {
 }
 
 /* --------------------------------------------------------------------
- *  RESET COUNTDOWN LOGIC – resets every day at 06:00 EST
- *  Runs until 30 December 2025 (EST)
+ *  DAILY-RESET COUNTDOWN LOGIC – resets every day at 06:00 EST
+ *  and runs until 30 December 2025 (EST).
  * ------------------------------------------------------------------*/
 function getNextResetTime() {
   const now     = new Date();
@@ -52,9 +52,7 @@ function startCountdown() {
     // stop completely after 30 Dec 2025 06:00 EST
     if (now >= cutoffTime) {
       clearInterval(countdownInterval);
-      document.querySelectorAll(".countdown-digits").forEach(el => {
-        if (el) el.innerHTML = "00";
-      });
+      document.querySelectorAll(".countdown-digits").forEach(el => el.innerHTML = "00");
       return;
     }
 
@@ -135,271 +133,125 @@ window.addEventListener("DOMContentLoaded", function () {
         </div>
       `;
       
-      let unbounceContainer = document.querySelector("#lp-pom-root") || document.body;
-      unbounceContainer.appendChild(popup);
+      (document.querySelector("#lp-pom-root") || document.body).appendChild(popup);
 
-      document.getElementById("exit-popup-close").addEventListener("click", function () {
+      document.getElementById("exit-popup-close").addEventListener("click", () => {
         document.getElementById("exit-popup").remove();
         document.body.style.overflow = "";
       });
 
       // Wait until the countdown element is in the DOM, then start
-      const countdownReady = () => document.getElementById("days-desktop");
-
       const waitForCountdownElements = (callback) => {
         const check = setInterval(() => {
-          if (countdownReady()) {
+          if (document.getElementById("days-desktop")) {
             clearInterval(check);
             callback();
           }
         }, 50);
       };
-
       waitForCountdownElements(startCountdown);
     }
   }
 
-  // TRIGGER #1 (Desktop): Mouse leaves top
+  /* ------------ TRIGGERS (unchanged) ------------ */
   if (!isMobile()) {
-    document.addEventListener("mouseleave", function (event) {
-      if (event.clientY <= 5) {
-        showExitPopup();
-      }
-    });
+    document.addEventListener("mouseleave", (e) => { if (e.clientY <= 5) showExitPopup(); });
   }
 
-  // TRIGGER #2 (Both Desktop & Mobile): Inactivity 30s
-  let inactivityTimeMs = 30000; 
-  let inactivityTimer;
-  function resetInactivityTimer() {
+  let inactivityTimer, inactivityTimeMs = 30000;
+  const resetInactivityTimer = () => {
     clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(function() {
-      showExitPopup();
-    }, inactivityTimeMs);
-  }
-  ["mousemove", "keydown", "scroll", "touchstart"].forEach(evt => {
-    document.addEventListener(evt, resetInactivityTimer, { passive: true });
-  });
+    inactivityTimer = setTimeout(showExitPopup, inactivityTimeMs);
+  };
+  ["mousemove","keydown","scroll","touchstart"].forEach(evt =>
+    document.addEventListener(evt, resetInactivityTimer, { passive: true })
+  );
   resetInactivityTimer();
 
-  // TRIGGER #3: Back button detection (mobile & desktop)
-  if (window.history && window.history.pushState) {
-    window.history.pushState({ page: 1 }, "", window.location.href);
-    window.addEventListener("popstate", function(event) {
-      showExitPopup();
-      window.history.pushState({ page: 1 }, "", window.location.href);
-    });
+  if (history.pushState) {
+    history.pushState({page:1}, "", location.href);
+    addEventListener("popstate", () => { showExitPopup(); history.pushState({page:1}, "", location.href); });
   }
 
-  // TRIGGER #5 (Mobile): Swipe from left to right
   if (isMobile()) {
-    let startX = 0, startY = 0, isTouching = false, swipeThreshold = 75;
-    document.addEventListener("touchstart", function(e) {
-      if (e.touches.length > 0) {
-        isTouching = true;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
+    let startX=0,startY=0,isTouching=false,swipeThreshold=75;
+    addEventListener("touchstart",e=>{
+      if(e.touches.length){isTouching=true;startX=e.touches[0].clientX;startY=e.touches[0].clientY;}
+    },{passive:true});
+    addEventListener("touchend",e=>{
+      if(isTouching&&e.changedTouches.length){
+        let endX=e.changedTouches[0].clientX,endY=e.changedTouches[0].clientY;
+        if(Math.abs(endX-startX)>Math.abs(endY-startY)&&(endX-startX)>swipeThreshold)showExitPopup();
       }
-    }, { passive: true });
-    document.addEventListener("touchmove", function(e) {}, { passive: true });
-    document.addEventListener("touchend", function(e) {
-      if (isTouching && e.changedTouches.length > 0) {
-        let endX = e.changedTouches[0].clientX;
-        let endY = e.changedTouches[0].clientY;
-        let distX = endX - startX;
-        let distY = endY - startY;
-        if (Math.abs(distX) > Math.abs(distY) && distX > swipeThreshold) {
-          showExitPopup();
-        }
-      }
-      isTouching = false;
-    }, { passive: true });
+      isTouching=false;
+    },{passive:true});
   }
 
-  // TRIGGER #6 (Both): Tab Switch
-  document.addEventListener("visibilitychange", function () {
-    if (document.hidden) {
-      showExitPopup();
-    }
-  });
+  addEventListener("visibilitychange", () => { if (document.hidden) showExitPopup(); });
 });
 
+/* ------------------------  STYLES  ------------------------ */
 const style = document.createElement("style");
 style.innerHTML = `
 
 @keyframes pulseBorder {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 199, 0, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 20px 10px rgba(255, 199, 0, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 199, 0, 0);
-  }
+  0%   { box-shadow: 0 0 0 0 rgba(255,199,0,.6); }
+  50%  { box-shadow: 0 0 20px 10px rgba(255,199,0,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,199,0,0); }
 }
-@keyframes pulseClaim {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
+@keyframes pulseClaim { 0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);} }
 @keyframes glow {
-  0% {
-    text-shadow: 0 0 5px #FFC700, 0 0 10px #FFC700, 0 0 20px #FFC700;
-  }
-  50% {
-    text-shadow: 0 0 10px #FFC700, 0 0 20px #FFC700, 0 0 30px #FFC700;
-  }
-  100% {
-    text-shadow: 0 0 5px #FFC700, 0 0 10px #FFC700, 0 0 20px #FFC700;
-  }
+  0% { text-shadow: 0 0 5px #FFC700,0 0 10px #FFC700,0 0 20px #FFC700; }
+  50%{ text-shadow: 0 0 10px #FFC700,0 0 20px #FFC700,0 0 30px #FFC700; }
+  100%{text-shadow:0 0 5px #FFC700,0 0 10px #FFC700,0 0 20px #FFC700;}
 }
 
-#exit-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.95) 20%, rgba(20, 20, 20, 0.98) 100%);
-  color: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  text-align: center;
-  width: 80%;
-  max-width: 450px;
-  border: 2px solid #ffc700;
-  box-shadow: 0 0 25px rgba(255, 199, 0, 0.3), 0 0 50px rgba(255, 255, 255, 0.1);
-  z-index: 100000;
-  animation: pulseBorder 3s infinite;
-  font-family: 'Inter', sans-serif;
+#exit-popup{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle at center,rgba(0,0,0,.95) 20%,rgba(20,20,20,.98) 100%);
+  color:#fff;padding:25px;border-radius:12px;text-align:center;width:80%;max-width:450px;
+  border:2px solid #ffc700;box-shadow:0 0 25px rgba(255,199,0,.3),0 0 50px rgba(255,255,255,.1);
+  z-index:100000;animation:pulseBorder 3s infinite;font-family:'Inter',sans-serif;
 }
 
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-family: Arial, sans-serif;
-  font-size: 20px;
-  font-weight: bold;
-  color: #fff;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.close-btn:hover {
-  transform: scale(1.2);
-}
+.close-btn{position:absolute;top:10px;right:15px;font:20px/1 Arial,sans-serif;font-weight:bold;color:#fff;cursor:pointer;transition:.3s;}
+.close-btn:hover{transform:scale(1.2);}
 
-.popup-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 15px;
-  min-height: 400px;
-}
+.popup-content{display:flex;flex-direction:column;align-items:center;margin-top:15px;min-height:400px;}
+.popup-image{width:100%;max-width:250px;border-radius:8px;margin-bottom:15px;}
+.popup-content p{font-size:19px;margin-bottom:15px;line-height:1.4;animation:glow 3s ease-in-out infinite;}
 
-.popup-image {
-  width: 100%;
-  max-width: 250px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-}
+.button-container{display:flex;justify-content:center;margin-top:15px;margin-bottom:25px;}
 
-.popup-content p {
-  font-size: 19px;
-  margin-bottom: 15px;
-  line-height: 1.4;
-  animation: glow 3s ease-in-out infinite;
+#claim-btn{
+  width:280px;height:45px;padding:10px;font-size:16px;border:none;cursor:pointer;
+  border-radius:79px;           /* <<< changed from 6px to 79px */
+  transition:.3s;text-align:center;background:#ffc700;color:#000;font-weight:bold;
+  animation:pulseClaim 3s ease-in-out infinite;box-shadow:0 0 10px rgba(255,199,0,.7);
 }
+#claim-btn:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(255,199,0,.9);}
 
-.button-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 15px;
-  margin-bottom: 25px;
+.countdown-wrapper{margin-top:auto;margin-bottom:10px;}
+.countdown-container-desktop{text-align:center;color:#FFC700;font-family:'Inter',sans-serif;padding:.8rem;margin:auto;max-width:80%;}
+.countdown{display:flex;justify-content:center;gap:12px;}
+.time-box{
+  background:rgba(255,199,0,.07);border:1px solid rgba(255,199,0,.3);
+  box-shadow:0 0 10px rgba(255,199,0,.2);border-radius:8px;width:60px;height:60px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
 }
+.countdown-digits{font-size:1.6rem;font-weight:700;}
+.countdown-label{font-size:.7rem;text-transform:uppercase;margin-top:2px;}
 
-#claim-btn {
-  width: 280px;
-  height: 45px;
-  padding: 10px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: 0.3s;
-  text-align: center;
-  background: #ffc700;
-  color: #000;
-  font-weight: bold;
-  animation: pulseClaim 3s ease-in-out infinite;
-  box-shadow: 0 0 10px rgba(255, 199, 0, 0.7);
-}
-#claim-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(255, 199, 0, 0.9);
-}
-
-.countdown-wrapper {
-  margin-top: auto;
-  margin-bottom: 10px;
-}
-
-.countdown-container-desktop {
-  text-align: center;
-  color: #FFC700;
-  font-family: 'Inter', sans-serif;
-  padding: 0.8rem;
-  margin: auto;
-  max-width: 80%;
-}
-
-.countdown-container-desktop .countdown {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
-
-.time-box {
-  background: rgba(255, 199, 0, 0.07);
-  border: 1px solid rgba(255, 199, 0, 0.3);
-  box-shadow: 0 0 10px rgba(255, 199, 0, 0.2);
-  border-radius: 8px;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.countdown-digits {
-  font-size: 1.6rem;
-  font-weight: 700;
-}
-.countdown-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  margin-top: 2px;
-}
-
-/* Larger desktops */
-@media (min-width: 768px) {
-  #exit-popup {
-    width: 60%;
-    max-width: 600px;
-    padding: 35px;
-  }
+@media (min-width:768px){
+  #exit-popup{width:60%;max-width:600px;padding:35px;}
 }
 `;
 document.head.appendChild(style);
 
-// GA tracking
-document.addEventListener('click', function(event) {
+/* ------------- Google Tag Manager tracking ------------- */
+document.addEventListener('click', (event) => {
   if (event.target.id === 'claim-btn' || event.target.id === 'exit-popup-close') {
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'gtm.click',
-      ClickID: event.target.id
-    });
+    window.dataLayer.push({ event: 'gtm.click', ClickID: event.target.id });
   }
 });
