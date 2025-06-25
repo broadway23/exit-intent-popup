@@ -97,7 +97,7 @@ window.addEventListener("DOMContentLoaded", function () {
         <div class="close-btn" id="exit-popup-close">×</div>
         <div class="popup-content">
           <img 
-            src="https://user-assets-unbounce-com.s3.amazonaws.com/bb4a5091-502f-410b-a7f9-963c98fb3b00/6ca741d3-890a-4b1e-8a76-e583b317b80a/100-50.original.png" 
+            src="https://broadway23.github.io/exit-modal-image/Exit%20Modal.png" 
             alt="Special Offer" 
             class="popup-image"
           >
