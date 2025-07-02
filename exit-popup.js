@@ -222,7 +222,7 @@ style.innerHTML = `
 .button-container { display: flex; justify-content: center; margin-top: 15px; margin-bottom: 25px; }
 
 #claim-btn {
-  background: linear-gradient(135deg, #ffd700, #b8860b);
+  background: linear-gradient(#ffc700, #d4af37, #f7e374);
   color: #1c1c1c;
   font: 700 1.2rem "Playfair Display", serif;
   text-transform: uppercase;
